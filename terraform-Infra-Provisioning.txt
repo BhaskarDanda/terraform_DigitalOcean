@@ -1,0 +1,39 @@
+pipeline {
+    agent {label 'Build-Server'} 
+    environment {
+        DO_TOKEN = credentials('DO_Token')  // Replace 'do_token' with the ID of your stored credential
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout code from the repository
+                git branch: 'main', url: 'https://github.com/BhaskarDanda/terraform_DigitalOcean.git'
+            }
+        }
+
+        stage('Terraform Init') {
+            steps {
+                script {
+                    sh 'terraform init'
+                }
+            }
+        }
+        
+        stage('Terraform Plan') {
+            steps {
+                script {
+                    sh 'terraform plan -out=tfplan -var do_token=$DO_TOKEN'
+                }
+            }
+        }
+        stage('Terraform Apply') {
+            steps {
+                script {
+                    // Pass the token as an environment variable if needed
+                    sh 'terraform apply -auto-approve tfplan'
+                    sh 'ls -lrt'
+                }
+            }
+        }
+    }
+}    
